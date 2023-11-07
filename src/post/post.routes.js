@@ -8,7 +8,7 @@ const router = Router()
 
 router.get('/', [], getPosts)
 
-router.get('/id/:id', [validarJWT, validarCampos], getPostId)
+router.get('/id/:id', [], getPostId)
 
 router.get('/user', [validarJWT, validarCampos], getPostIdByUser)
 

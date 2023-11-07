@@ -66,20 +66,24 @@ const getPosts = async (req = request, res = response) => {
 const getPostId = async (req = request, res = response) => {
   const { id } = req.params
   try {
-    const post = await Post.findById(id)
+    const video = await Post.findById(id)
       .populate('categories', 'name')
       .populate('user', 'name')
 
-    if (!post.status) {
+    if (!video.status) {
       return res.status(401).json({
-        msg: 'producto no encontrada'
+        ok: true,
+        msg: 'video no encontrada'
       })
     }
-    res.status(200).json({
-      post
+    return res.status(200).json({
+      ok: true,
+      msg: 'get API - getPostId',
+      video
     })
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
+      ok: false,
       msg: 'Hable con el administrador'
     })
     console.log(error)
