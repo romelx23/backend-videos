@@ -21,8 +21,8 @@ const getPosts = async (req = request, res = response) => {
       };
     }
   }
-
-  const user = await User.findOne({ _id: slug });
+  let user = {}
+  if (slug !== '') user = await User.findOne({ _id: slug });
 
   const query = {
     status: true,
@@ -34,7 +34,8 @@ const getPosts = async (req = request, res = response) => {
   }
 
   if (category !== '') {
-    query.category = category;
+    console.log({ category });
+    query.categories = category;
   }
 
   if (user) {
