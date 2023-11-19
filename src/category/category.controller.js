@@ -1,5 +1,6 @@
 const { request, response } = require('express')
-const Category = require('../category/category.model')
+const Category = require('../category/category.model');
+const Post = require('../post/post.model');
 
 const createCategory = async (req = request, res = response) => {
   const name = req.body?.name?.toUpperCase()
@@ -30,8 +31,16 @@ const createCategory = async (req = request, res = response) => {
 // Obtener Categorias - paginados - total - populate
 
 const getCategory = async (req = request, res = response) => {
-  const { limit = 5, offset = 0 } = req.query
-  const query = { status: true }
+  const { limit = 5, offset = 0, search = '' } = req.query
+
+  const searchRegex = new RegExp(search, 'i')
+
+  const query = {
+    status: true,
+    $or: [
+      { name: { $regex: searchRegex } },
+    ]
+  }
   const [total, category] = await Promise.all([
     Category.countDocuments(query),
     Category.find(query)
@@ -132,12 +141,31 @@ const deleteCategory = async (req = request, res = response) => {
   const { id } = req.params
 
   try {
-    const categoria = await Category.deleteOne({ _id: id }).exec();
     // const categoria = await Category.findByIdAndUpdate(
     //   id,
     //   { status: false },
     //   { new: true }
     // )
+
+    // si la categoria esta asociada a un post, no se puede eliminar
+
+    const post = await Post.find({ categories: { $in: [id] } })
+
+    if (post.length > 0) {
+      return res.status(401).json({
+        ok: false,
+        msg: 'La categoría no se puede eliminar, esta asociada a un video'
+      })
+    }
+
+    const categoria = await Category.deleteOne({ _id: id }).exec();
+
+    if (!categoria) {
+      return res.status(401).json({
+        ok: false,
+        msg: 'categoria no encontrada'
+      })
+    }
 
     return res.status(200).json({
       categoria
